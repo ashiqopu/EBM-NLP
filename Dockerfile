@@ -8,22 +8,29 @@ WORKDIR /ebm-nlp
 # Copy the current directory contents into the container at /ebm-nlp
 COPY . /ebm-nlp
 
-# Required packages for data fetching and python
-RUN apt-get update && apt-get install -y \
-    zip unzip \
-    wget git\
-    python3 \
-    python3-pip
+# Update container image
+RUN apt-get -qq update
+
+# Required packages for testing and data fetching
+RUN apt-get -qq install -y zip unzip wget git -qq
+RUN apt-get -qq install -y python3 python3-pip -qq
+RUN apt-get -qq install -y openjdk-8-jre-headless -qq
 
 # DO NOT upgrare pip as it will break python
-RUN python3 -m pip install --upgrade setuptools
+RUN python3 -m pip -q install --upgrade setuptools
 
 # Install Tensorflow for training
-RUN python3 -m pip install --user tensorflow
+RUN python3 -m pip -q install --user tensorflow
 
 # Installl NLTK library and Averaged Perceptron Tagger
-RUN python3 -m pip install nltk
+RUN python3 -m pip -q install nltk
 RUN python3 -m nltk.downloader averaged_perceptron_tagger
+
+# Clean accessibility.properties for java
+# RUN sed -i 's/assistive/#assistive/g' /etc/java-8-openjdk/accessibility.properties
+
+# Add stanford-ner to CLASSPATH
+RUN export CLASSPATH="/ebm-nlp/stanford-ner/stanford-ner.jar"
 
 # Set executable permission to run-full.sh
 RUN chmod +x run-full.sh

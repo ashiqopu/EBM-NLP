@@ -1,16 +1,16 @@
 #!/bin/sh
 echo "Md Ashiqur Rahman : CSC 585 : HW3 : PICO"
+echo ""
 tar -xvzf ebm_nlp_1_00.tar.gz
+echo "<============ Running test on PIO Spans ============>"
 cd acl_scripts/lstm-crf/
 make glove
-cd data
-mkdir embeddings
-cd embeddings
-wget http://tttran.net/mirror/PubMed-w2v.txt.gz
-gunzip PubMed-w2v.txt.gz
-cd ..
-cd ..
+make pubmed
 make run
 echo ""
 echo "<================== Task Complete ==================>"
+echo ""
+cd ..
+cd ..
+
 
