@@ -9,8 +9,8 @@ Necessary modification were done to support testing in Docker. All trained model
     
     Host:
         OS  : Linux Mint 19 (based on Ubuntu 18.04)
-        CPU : [Intel Xeon E3-1265Lv2](https://ark.intel.com/products/65728/Intel-Xeon-Processor-E3-1265L-v2-8M-Cache-2-50-GHz-)
-        RAM : 16GB (full for PIO spans and 8GB for hierarchical label training)
+        CPU : Intel Xeon E3-1265Lv2
+        RAM : 16GB (full for PIO spans and 12GB for hierarchical label training)
 
 ### Steps
 All the files must be located as is to successfully work with the Dockerfile. Git clone and cd into the EBM-NLP directory.

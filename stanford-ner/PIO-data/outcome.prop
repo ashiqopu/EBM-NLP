@@ -3,32 +3,28 @@ trainFile = PIO-data/outcome/o-train.txt
 serializeTo = classifiers/outcome.crf.ser.gz
 
 type=crf
-
 wordFunction = edu.stanford.nlp.process.AmericanizeFunction
 
 # structure of your training file; this tells the classifier that
 # the word is in column 0 and the correct answer is in column 1
-map = word=0,answer=1
+map = word=0,tag=1,answer=2
 
-# This specifies the order of the CRF: order 1 means that features
-# apply at most to a class pair of previous class and current class
-# or current class and next class.
 maxLeft=1
-
-# these are the features we'd like to train with
-# some are discussed below, the rest can be
-# understood by looking at NERFeatureFactory
+distSimLexicon = PIO-data/egw4-reut.512.clusters
+numberEquivalenceDistSim = true
+unknownWordDistSimClass = 0
+useDistSim = true
 useClassFeature=true
 useWord=true
-# word character ngrams will be included up to length 6 as prefixes
-# and suffixes only 
-useNGrams=false
-
+useLongSequences=true 
+useNGrams=true
+#noMidNGrams=false
 noMidNGrams=true
-maxNGramLeng=6
 usePrev=true
 useNext=true
+useLongSequences=true
 useDisjunctive=true
+disjunctionWidth=5
 useSequences=true
 usePrevSequences=true
 # the last 4 properties deal with word shape features
@@ -36,7 +32,8 @@ useTypeSeqs=true
 useTypeSeqs2=true
 useTypeySequences=true
 wordShape=chris2useLC
-
+# smoothing
+# sigma=5
 useQN = true
 QNsize = 25
 
