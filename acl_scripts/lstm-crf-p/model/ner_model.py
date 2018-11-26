@@ -352,19 +352,23 @@ class NERModel(BaseModel):
         FN = 0
         for tag, counts in stats.items():
           if tag != 'N':
+            if counts['n_pred']:
+              tag_p = counts['n_correct'] / counts['n_pred']
+            else: tag_p = 0
+            if counts['n_true']:
+              tag_r = counts['n_correct'] / counts['n_true']
+            else: tag_r = 0
+            results['p'][tag] = tag_p
+            results['r'][tag] = tag_r
+            results['f1'][tag] = 2 * tag_p * tag_r / (tag_p + tag_r) if (tag_p * tag_r) > 0 else 0
+            print('%s: %s' %(tag, '  '.join(['%s=%.2f' %(metric, results[metric][tag]) for metric in results])))
+
             TP += counts['n_correct']
             FP += counts['n_pred'] - counts['n_correct']
             FN += counts['n_true'] - counts['n_correct']
           elif tag == 'N':
             TN = counts['n_true']
-
-          tag_p = counts['n_correct'] / counts['n_pred']
-          tag_r = counts['n_correct'] / counts['n_true']
-          results['p'][tag] = tag_p
-          results['r'][tag] = tag_r
-          results['f1'][tag] = 2 * tag_p * tag_r / (tag_p + tag_r)
-          print('%s: %s' %(tag, '  '.join(['%s=%.2f' %(metric, results[metric][tag]) for metric in results])))
-
+        
         print('TN: %s    FP: %s' %(TN, FP))
         print('FN: %s    TP: %s' %(FN, TP))
 

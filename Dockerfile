@@ -14,7 +14,7 @@ RUN apt-get -qq update
 # Required packages for testing and data fetching
 RUN apt-get -qq install -y zip unzip wget git -qq
 RUN apt-get -qq install -y python3 python3-pip -qq
-RUN apt-get -qq install -y openjdk-8-jre-headless -qq
+# RUN apt-get -qq install -y openjdk-8-jre-headless -qq
 
 # DO NOT upgrare pip as it will break python
 RUN python3 -m pip -q install --upgrade setuptools
@@ -30,7 +30,7 @@ RUN python3 -m nltk.downloader averaged_perceptron_tagger
 # RUN sed -i 's/assistive/#assistive/g' /etc/java-8-openjdk/accessibility.properties
 
 # Add stanford-ner to CLASSPATH
-RUN export CLASSPATH="/ebm-nlp/stanford-ner/stanford-ner.jar"
+# RUN export CLASSPATH="/ebm-nlp/stanford-ner/stanford-ner.jar"
 
 # Set executable permission to run-full.sh
 RUN chmod +x run-full.sh
@@ -39,4 +39,6 @@ RUN chmod +x run-full.sh
 RUN chmod +x rahman-eval.sh
 
 # This is the command that will be run when you start the container
-CMD ["/bin/sh", "./rahman-eval.sh"]
+ENTRYPOINT ["/ebm-nlp/rahman-eval.sh"]
+CMD []
+#CMD ["/bin/sh", "./rahman-eval.sh"]

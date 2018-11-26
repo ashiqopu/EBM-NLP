@@ -4,7 +4,7 @@ glove:
 	rm ./data/glove.6B.zip
 
 pubmed:
-	wget -P ./data/embeddings/ http://tttran.net/mirror/PubMed-w2v.txt.gz
+	wget -P ./data/embeddings/ "http://tttran.net/mirror/PubMed-w2v.txt.gz"
 	gunzip ./data/embeddings/PubMed-w2v.txt.gz
 
 run:

@@ -3,8 +3,8 @@ from model.data_utils import CoNLLDataset, get_vocabs, UNK, NUM, \
     get_glove_vocab, write_vocab, load_vocab, get_char_vocab, \
     export_trimmed_glove_vectors, get_processing_word
 import json, re, os, sys
-import nltk
 import random
+import nltk
 from nltk import pos_tag, sent_tokenize
 from nltk import ngrams
 from glob import glob
@@ -107,49 +107,53 @@ def pre_main():
     id_to_tokens = {}
     id_to_pos = {}
     crowd_ids, gold_ids = set(), set()
-    PIO = ['participants', 'interventions', 'outcomes']
-    for pio in PIO:
-      print('Reading files for %s' %pio)
-      crowd_labels = glob('../../ebm_nlp_1_00/annotations/aggregated/starting_spans/%s/train/*.ann' %pio)
-      for fname in crowd_labels: crowd_ids.add(fname_to_pmid(fname))
+    PIO = ['Nolabel', 'bphysical', 'pain', 'mortality', 'adverseeffect', 'mental', 'others']
+    #for pio in PIO:
+    print('Reading files for Outcomes')
+    crowd_labels = glob('../../ebm_nlp_1_00/annotations/aggregated/hierarchical_labels/outcomes/train/*.ann')
+    for fname in crowd_labels: crowd_ids.add(fname_to_pmid(fname))
 
-      test_labels = glob('../../ebm_nlp_1_00/annotations/aggregated/starting_spans/%s/test/gold/*.ann' %pio)
-      for fname in test_labels: gold_ids.add(fname_to_pmid(fname))
+    test_labels = glob('../../ebm_nlp_1_00/annotations/aggregated/hierarchical_labels/outcomes/test/gold/*.ann')
+    for fname in test_labels: gold_ids.add(fname_to_pmid(fname))
 
-      print('processing %d files' %len(crowd_labels + test_labels))
-      for fname in crowd_labels + test_labels:
-        pmid = fname_to_pmid(fname)
-        id_to_labels[pmid][pio] = open(fname).read().split(',')
-        if pmid not in id_to_tokens:
-          tokens, tags = zip(*nltk.pos_tag(open('../../ebm_nlp_1_00/documents/%s.tokens' %pmid).read().split()))
-          id_to_tokens[pmid] = tokens
-          id_to_pos[pmid] = tags
+    print('processing %d files' %len(crowd_labels + test_labels))
+    for fname in crowd_labels + test_labels:
+      pmid = fname_to_pmid(fname)
+      id_to_labels[pmid]['p'] = open(fname).read().split(',')
+      if pmid not in id_to_tokens:
+        tokens, tags = zip(*nltk.pos_tag(open('../../ebm_nlp_1_00/documents/%s.tokens' %pmid).read().split()))
+        id_to_tokens[pmid] = tokens
+        id_to_pos[pmid] = tags
 
-    crowd_ids = list(filter(lambda pmid: len(id_to_labels[pmid]) == len(PIO), crowd_ids))
+    crowd_ids = list(filter(lambda pmid: len(id_to_labels[pmid]) == 1, crowd_ids))
     dev_idx = int(len(crowd_ids) * 0.2)
     dev_ids, train_ids = crowd_ids[:dev_idx], crowd_ids[dev_idx:]
 
-    gold_ids = list(filter(lambda pmid: len(id_to_labels[pmid]) == len(PIO), gold_ids))
+    gold_ids = list(filter(lambda pmid: len(id_to_labels[pmid]) == 1, gold_ids))
     test_ids = gold_ids
 
-    # for training data filter only
     for ids, fname in [(train_ids, 'train')]:
     # for ids, fname in [(dev_ids, 'dev'), (train_ids, 'train'), (test_ids, 'test')]:
       fout = open('data/%s.txt' %fname, 'w')
       for pmid in ids:
+        # fout.write('-DOCSTART- -X- O O\n\n')
+        # for i, (token, pos) in enumerate(zip(id_to_tokens[pmid], id_to_pos[pmid])):
+        #   labels = int(id_to_labels[pmid]['p'][i])
+        #   label = 'N'
+        #   if labels:
+        #     label = PIO[labels][0]
+        #   fout.write('%s %s %s\n' %(token, pos, label))
+        #   if token == '.': fout.write('\n')
         token_list = []
         pos_list = []
         label_list = []
         weight_list = []
         fout.write('-DOCSTART- -X- O O\n\n')
         for i, (token, pos) in enumerate(zip(id_to_tokens[pmid], id_to_pos[pmid])):
-          labels = [int(id_to_labels[pmid][pio][i]) for pio in PIO]
+          labels = int(id_to_labels[pmid]['p'][i])
           label = 'N'
-          for pio, is_applied in zip(PIO, labels):
-            if is_applied:
-              label = pio[0]
-          # fout.write('%s %s %s\n' %(token, pos, label))
-          # if token == '.': fout.write('\n')
+          if labels:
+            label = PIO[labels][0]
           token_list.append(token)
           pos_list.append(pos)
           label_list.append(label)
@@ -157,30 +161,29 @@ def pre_main():
             weight_list.append(0.0)
           else:
             weight_list.append(1.0)
+
         # weighted randomized dropout limit set
-        
         for index, wt in enumerate(weight_list):
           if weight_list[index] < 1.0:
             if index == 0: # left boundary condition
               if weight_list[index+1] == 1.0:
-                weight_list[index] = 1.0
-              else:
                 weight_list[index] = 0.5
+              else:
+                weight_list[index] = 0.0
             elif index == len(weight_list)-1: # right boundary condition
               if weight_list[index-1] == 1.0:
-                weight_list[index] = 1.0
-              else:
                 weight_list[index] = 0.5
+              else:
+                weight_list[index] = 0.0
             else: # inside condition
               if weight_list[index-1] == 1.0 or weight_list[index+1] == 1.0:
-                weight_list[index] = 1.0
-              else:
                 weight_list[index] = 0.5
-        
+              else:
+                weight_list[index] = 0.0
         for index, tok in enumerate(token_list):
           if tok == '.':
             fout.write('%s %s %s\n' %(token_list[index], pos_list[index], label_list[index]))
-          if random.uniform(0, 1.0) <= weight_list[index]:
+          elif random.uniform(0, 1.0) <= weight_list[index]:
             fout.write('%s %s %s\n' %(token_list[index], pos_list[index], label_list[index]))
           if tok == '.': fout.write('\n')
 
@@ -189,14 +192,12 @@ def pre_main():
       for pmid in ids:
         fout.write('-DOCSTART- -X- O O\n\n')
         for i, (token, pos) in enumerate(zip(id_to_tokens[pmid], id_to_pos[pmid])):
-          labels = [int(id_to_labels[pmid][pio][i]) for pio in PIO]
+          labels = int(id_to_labels[pmid]['p'][i])
           label = 'N'
-          for pio, is_applied in zip(PIO, labels):
-            if is_applied:
-              label = pio[0]
+          if labels:
+            label = PIO[labels][0]
           fout.write('%s %s %s\n' %(token, pos, label))
           if token == '.': fout.write('\n')
-
 
 if __name__ == "__main__":
     pre_main()

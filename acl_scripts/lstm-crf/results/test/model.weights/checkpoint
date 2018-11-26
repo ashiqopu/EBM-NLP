@@ -1,2 +1,0 @@
-model_checkpoint_path: "/ebm-nlp/acl_scripts/lstm-crf/results/test/model.weights/"
-all_model_checkpoint_paths: "/ebm-nlp/acl_scripts/lstm-crf/results/test/model.weights/"
