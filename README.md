@@ -25,8 +25,9 @@ All the files must be located as is to successfully work with the Dockerfile. Gi
 ##### For minimal build (only evaluation on pretrained data, default)
     >> sudo docker build -t rahman-cs585-hw4 .
 
-  To run the container with a parameter to run either iteration 1 or 2:
-  sudo docker run --name rahman rahman-cs585-hw4 <iteration_num>
+To run the container with a parameter to run either iteration 1 or 2:
+sudo docker run --name rahman rahman-cs585-hw4 <iteration_num>
+
     >> sudo docker run rahman-cs585-hw4 iter1
     >> sudo docker run rahman-cs585-hw4 iter2
 
